@@ -37,16 +37,20 @@ std::string ros2manager::command_pulisher(std::string com)
 bool ros2manager::auto_find()
 {
     workspaces.clear();
-    if (std::filesystem::exists("/home") && std::filesystem::is_directory("/home"))
+    std::string findpath = "/home";
+    if (std::filesystem::exists(findpath) && std::filesystem::is_directory(findpath))
     {
 
         int j=0;
-        for (const auto &entry : std::filesystem::recursive_directory_iterator("/home"))
+
+        for (const auto &entry : std::filesystem::recursive_directory_iterator(findpath))
         {
             if (entry.path().filename() == "package.xml")
             {
 
                 if (entry.path().string().find("/install/") != std::string::npos)
+                    continue;
+                if  (entry.path().string().find("/Src/") != std::string::npos)
                     continue;
                 workspace ws;
                 ws.path = entry.path().c_str();
@@ -70,9 +74,8 @@ bool ros2manager::auto_find()
                             ws.version = std::to_string(0);
                             ws.command_to_ws = "cd " + ws_path;
                             ws.command_source_install = "source " + ws_path + "/install/setup.sh";
-
                             workspaces.push_back(ws);
-                            std::cout << "ws.name: " << workspaces[0].name << std::endl;
+                            //std::cout << "ws.name: " << workspaces[0].name << std::endl;
                         }
                     }
                 }
@@ -91,7 +94,8 @@ bool ros2manager::auto_find()
     }
     else
     {
-        perror("Failed to load XML file");
+        std::cerr << "Failed to load XML file" <<std::endl;
+        //perror("Failed to load XML file");
         return false;
     }
 }
@@ -146,7 +150,8 @@ bool ros2manager::init(const char *profile_xml_file)
     }
     else
     {
-        perror("Failed to load XML file");
+        std::cerr << "Failed to load XML file" <<std::endl;
+        //perror("Failed to load XML file");
         return false;
     }
     return true;
@@ -183,7 +188,6 @@ launch ros2manager::launch_from_pkg(int i, int j)
                 //std::cout << "===" << workspaces[i].packages[i].launches[j].name << std::endl;
                 k++;
                 path = launch_file;
-
             }
 
 
@@ -192,7 +196,6 @@ launch ros2manager::launch_from_pkg(int i, int j)
     else
     {
         std::cerr << "路径不存在或不是一个目录" << std::endl;
-
     }
     return l;
 
@@ -203,6 +206,7 @@ void ros2manager::pkg_from_ws(std::string ws_path, int i)
     ws_path = ws_path + "/src";
     std::cout << "ws_path: " << ws_path << std::endl;
     int j = 0;
+
     if (std::filesystem::exists(ws_path) && std::filesystem::is_directory(ws_path))
     {
         for (const auto &entry : std::filesystem::recursive_directory_iterator(ws_path))
@@ -212,7 +216,15 @@ void ros2manager::pkg_from_ws(std::string ws_path, int i)
                 package pkg;
                 pkg.path = entry.path().c_str();
                 workspaces[i].packages[j].path = pkg.path;
-                pkg = loadPackageXML(workspaces[i].packages[j].path, pkg);
+                tinyxml2::XMLDocument doc;
+                doc.LoadFile(workspaces[i].packages[j].path.c_str());
+                tinyxml2::XMLElement *root = doc.FirstChildElement("package");
+                if(root)
+                {
+                    pkg = loadPackageXML(workspaces[i].packages[j].path, pkg);
+                }
+                else continue;
+
                 workspaces[i].packages[j] = pkg;
                 launch_from_pkg(i, j);
                 node_from_pkg(i, j);
@@ -223,7 +235,7 @@ void ros2manager::pkg_from_ws(std::string ws_path, int i)
     }
     else
     {
-        perror("No such file or directory");
+        std::cerr << "Error: " << ws_path << " is not a valid directory" << std::endl;
 
     }
 }
@@ -282,7 +294,17 @@ node ros2manager::node_from_pkg(int i, int j)
                 if ((entry.status().permissions() & std::filesystem::perms::owner_exec) != std::filesystem::perms::none) {
                     if(entry.path().string().find(".so")== std::string::npos&&entry.path().string().find(".out")== std::string::npos&&
                         entry.path().string().find(".a")== std::string::npos&&entry.path().string().find(".lib")==std::string::npos&&
-                        entry.path().string().find(".bin")== std::string::npos)
+                        entry.path().string().find(".bin")== std::string::npos&&entry.path().string().find(".built_by")==std::string::npos&&
+                        entry.path().string().find(".json")==std::string::npos&&
+                        entry.path().string().find(".last")==std::string::npos&&
+                        entry.path().string().find(".txt")==std::string::npos&&
+                        entry.path().string().find(".o")==std::string::npos&&
+                        entry.path().string().find(".make")==std::string::npos&&
+                        entry.path().string().find(".ts")==std::string::npos&&
+                        entry.path().string().find(".ini")==std::string::npos&&
+                        entry.path().string().find(".sh")==std::string::npos&&
+                        entry.path().string().find("marks")==std::string::npos
+                        )
                     {
                         std::cout << "==========" <<entry.path().filename().string() << std::endl;
                         workspaces[i].packages[j].nodes[node_index].name = entry.path().filename().string();
@@ -334,6 +356,7 @@ package ros2manager::loadPackageXML(std::string file_path, package pkg)
     tinyxml2::XMLElement *root = doc.FirstChildElement("package");
     if (root)
     {
+        std::cout << "you" <<std::endl;
         pkg.name = root->FirstChildElement("name")->GetText();
         pkg.version = root->FirstChildElement("version")->GetText();
         pkg.description = root->FirstChildElement("description")->GetText();
@@ -351,6 +374,11 @@ package ros2manager::loadPackageXML(std::string file_path, package pkg)
             pkg.test_depends.push_back(dep->GetText());
         }
     }
+    else
+    {
+        std::cout << "no" <<std::endl;
+    }
+
     return pkg;
 }
 
