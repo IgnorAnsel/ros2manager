@@ -9,9 +9,9 @@
 #include <thread>
 //#include "widget.h"
 #include <QWidget>
-#define MAX_NODE 50
-#define MAX_PACKAGE 50
-#define MAX_LAUNCH 50
+#define MAX_NODE 100
+#define MAX_PACKAGE 100
+#define MAX_LAUNCH 100
 struct node
 {
     std::string name;        // 节点名

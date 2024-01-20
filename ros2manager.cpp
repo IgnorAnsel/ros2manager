@@ -50,7 +50,7 @@ bool ros2manager::auto_find()
 
                 if (entry.path().string().find("/install/") != std::string::npos)
                     continue;
-                if  (entry.path().string().find("/Src/") != std::string::npos)
+                if  (entry.path().string().find("/Src/") != std::string::npos||entry.path().string().find(".local") != std::string::npos)
                     continue;
                 workspace ws;
                 ws.path = entry.path().c_str();
@@ -64,22 +64,36 @@ bool ros2manager::auto_find()
                         size_t slash2_pos = entry.path().string().find("/", src_pos - 5);
                         if (slash2_pos != std::string::npos)
                         {
+                            bool islike = 0;
                             std::string between_slashes = entry.path().string().substr(slash1_pos + 1, slash2_pos - slash1_pos - 1);
                             std::string ws_path = entry.path().string().substr(0, src_pos);
-                            std::cout << "ws_path: " << ws_path << std::endl;
-                            ws.id = std::to_string(j);
-                            ws.name = between_slashes;
-                            ws.path = ws_path;
-                            ws.description = "ros2 workspace";
-                            ws.version = std::to_string(0);
-                            ws.command_to_ws = "cd " + ws_path;
-                            ws.command_source_install = "source " + ws_path + "/install/setup.sh";
-                            workspaces.push_back(ws);
+                            for(int i=0;i<workspaces.size();i++)
+                            {
+                                if(ws_path == workspaces[i].path)
+                                {
+                                    islike = 1;
+                                    break;
+                                }
+                            }
+                            if(islike==0)
+                            {
+                                std::cout << "ws_path: " << ws_path << std::endl;
+                                ws.id = std::to_string(j);
+                                ws.name = between_slashes;
+                                ws.path = ws_path;
+                                ws.description = "ros2 workspace";
+                                ws.version = std::to_string(0);
+                                ws.command_to_ws = "cd " + ws_path;
+                                ws.command_source_install = "source " + ws_path + "/install/setup.sh";
+                                workspaces.push_back(ws);
+                                std::cout << j << std::endl;
+                                j++;
+                            }
                             //std::cout << "ws.name: " << workspaces[0].name << std::endl;
                         }
                     }
                 }
-                j++;
+
             }
             // std::cout<< workspaces.size() <<std::endl;
         }
@@ -206,7 +220,6 @@ void ros2manager::pkg_from_ws(std::string ws_path, int i)
     ws_path = ws_path + "/src";
     std::cout << "ws_path: " << ws_path << std::endl;
     int j = 0;
-
     if (std::filesystem::exists(ws_path) && std::filesystem::is_directory(ws_path))
     {
         for (const auto &entry : std::filesystem::recursive_directory_iterator(ws_path))
