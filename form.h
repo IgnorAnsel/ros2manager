@@ -9,7 +9,6 @@
 namespace Ui {
 class Form;
 }
-
 class Form : public QWidget
 {
     Q_OBJECT
@@ -23,7 +22,6 @@ public slots:
     void slotMenuPopup(const QPoint &pos);
 private slots:
     void on_treeView_clicked(const QModelIndex &index);
-
 private:
     workspace form_ws;
     Ui::Form *ui;

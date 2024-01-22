@@ -21,7 +21,7 @@ std::string ros2manager::command_pulisher(std::string com)
         result += buffer;
     }
     if (result.empty());
-        //result = "None";
+    //result = "None";
     // 关闭管道
     pclose(pipe);
 
@@ -77,7 +77,7 @@ bool ros2manager::auto_find()
                             }
                             if(islike==0)
                             {
-                                std::cout << "ws_path: " << ws_path << std::endl;
+                                //std::cout << "ws_path: " << ws_path << std::endl;
                                 ws.id = std::to_string(j);
                                 ws.name = between_slashes;
                                 ws.path = ws_path;
@@ -86,7 +86,6 @@ bool ros2manager::auto_find()
                                 ws.command_to_ws = "cd " + ws_path;
                                 ws.command_source_install = "source " + ws_path + "/install/setup.sh";
                                 workspaces.push_back(ws);
-                                std::cout << j << std::endl;
                                 j++;
                             }
                             //std::cout << "ws.name: " << workspaces[0].name << std::endl;
@@ -100,6 +99,10 @@ bool ros2manager::auto_find()
         for (size_t i = 0; i < workspaces.size(); ++i)
         {
             std::cout << "<---" << workspaces[i].name << "--->          " << std::endl;
+            if(callback)
+            {
+
+            }
             pkg_from_ws(workspaces[i].path, i);
             emit addTabSignal(workspaces[i]);
             //std::cout << "000000000000000000" << workspaces[i].packages[0].nodes[0].name << std::endl;
@@ -124,7 +127,7 @@ bool ros2manager::init(const char *profile_xml_file)
     if (doc.LoadFile(profile_xml_file) == tinyxml2::XML_SUCCESS)
     {
         // 解析XML文件
-        std::cout << "Loaded XML file: " << profile_xml_file << std::endl;
+        //std::cout << "Loaded XML file: " << profile_xml_file << std::endl;
         tinyxml2::XMLElement *workspaceElement = doc.FirstChildElement("WorkSpace")->FirstChildElement("workspace");
         while (workspaceElement)
         {
@@ -156,6 +159,11 @@ bool ros2manager::init(const char *profile_xml_file)
         for (size_t i = 0; i < workspaces.size(); ++i)
         {
             //std::cout << "<---" << workspaces[i].name << "--->          " << std::endl;
+//            std::string find = workspaces[i].name;
+//            find = "<---"+find+"--->";
+//            if (callback) {
+//                callback->onCommandOutput(find);
+//            }
             pkg_from_ws(workspaces[i].path, i);
             emit addTabSignal(workspaces[i]);
             //std::cout << "000000000000000000" << workspaces[i].packages[0].nodes[0].name << std::endl;
@@ -183,7 +191,8 @@ launch ros2manager::launch_from_pkg(int i, int j)
     }
     std::string launch_file = path + "launch/";
     path = path + "launch/";
-    std::cout << "path: " << path << std::endl;
+    //std::cout << "path: " << path << std::endl;
+
     int k = 0;
     if (std::filesystem::exists(path) && std::filesystem::is_directory(path))
     {
@@ -218,7 +227,13 @@ launch ros2manager::launch_from_pkg(int i, int j)
 void ros2manager::pkg_from_ws(std::string ws_path, int i)
 {
     ws_path = ws_path + "/src";
-    std::cout << "ws_path: " << ws_path << std::endl;
+    //std::cout << "ws_path: " << ws_path << std::endl;
+    size_t srcPos = ws_path.rfind("/src");
+    std::string finding = ws_path.substr(0,srcPos);
+    finding = "Find workspace : "+finding;
+    if (callback) {
+        callback->onCommandOutput(finding);
+    }
     int j = 0;
     if (std::filesystem::exists(ws_path) && std::filesystem::is_directory(ws_path))
     {
@@ -241,7 +256,6 @@ void ros2manager::pkg_from_ws(std::string ws_path, int i)
                 workspaces[i].packages[j] = pkg;
                 launch_from_pkg(i, j);
                 node_from_pkg(i, j);
-                std::cout << "===package: " << workspaces[i].packages[j].launches[0].name << std::endl;
                 j++;
             }
         }
@@ -292,7 +306,6 @@ node ros2manager::node_from_pkg(int i, int j)
     str = str +"build/" + workspaces[i].packages[j].name;
 
     //std::string str = command_pulisher(commad);
-    //std::cout << "=================="<<str << "   "  << std::endl;
     std::string directory = str;
     if (std::filesystem::exists(directory) && std::filesystem::is_directory(directory)) {
         for (const auto& entry : std::filesystem::recursive_directory_iterator(directory)) {
@@ -302,8 +315,8 @@ node ros2manager::node_from_pkg(int i, int j)
                 if (entry.path().extension() == ".exe") {
                     std::cout << entry.path() << std::endl;
                 }
-#else
-                // 对于Unix-like系统，检查文件是否具有执行权限
+#else \
+    // 对于Unix-like系统，检查文件是否具有执行权限
                 if ((entry.status().permissions() & std::filesystem::perms::owner_exec) != std::filesystem::perms::none) {
                     if(entry.path().string().find(".so")== std::string::npos&&entry.path().string().find(".out")== std::string::npos&&
                         entry.path().string().find(".a")== std::string::npos&&entry.path().string().find(".lib")==std::string::npos&&
@@ -319,7 +332,7 @@ node ros2manager::node_from_pkg(int i, int j)
                         entry.path().string().find("marks")==std::string::npos
                         )
                     {
-                        std::cout << "==========" <<entry.path().filename().string() << std::endl;
+                        //std::cout << "==========" <<entry.path().filename().string() << std::endl;
                         workspaces[i].packages[j].nodes[node_index].name = entry.path().filename().string();
                         workspaces[i].packages[j].nodes[node_index].run_command =workspaces[i].command_source_install +";ros2 run "+workspaces[i].packages[j].name+" "+workspaces[i].packages[j].nodes[node_index].name;
                         node_index++;
@@ -329,35 +342,35 @@ node ros2manager::node_from_pkg(int i, int j)
             }
         }
     }
-//    while (startPos != std::string::npos)
-//    {
-//        startPos = str.find(workspaces[i].packages[j].name, startPos);
+    //    while (startPos != std::string::npos)
+    //    {
+    //        startPos = str.find(workspaces[i].packages[j].name, startPos);
 
-//        if (startPos != std::string::npos)
-//        {
-//            // 找到下一个空格的位置
-//            size_t spacePos = str.find(' ', startPos + 1);
-//            size_t linePos = str.find('\n', startPos + 1);
-//            if (spacePos != std::string::npos)
-//            {
-//                // 提取出的字符串节点名
-//                std::string extractedString = str.substr(spacePos + 1, linePos - spacePos - 1);
+    //        if (startPos != std::string::npos)
+    //        {
+    //            // 找到下一个空格的位置
+    //            size_t spacePos = str.find(' ', startPos + 1);
+    //            size_t linePos = str.find('\n', startPos + 1);
+    //            if (spacePos != std::string::npos)
+    //            {
+    //                // 提取出的字符串节点名
+    //                std::string extractedString = str.substr(spacePos + 1, linePos - spacePos - 1);
 
-//                workspaces[i].packages[j].nodes[node_index].name = extractedString;
-//                std::cout << node_index <<std::endl;
-//                workspaces[i].packages[j].nodes[node_index].run_command = workspaces[i].command_source_install + ";ros2 run " + workspaces[i].packages[j].name + " " + extractedString + " &";
-//                std::cout << workspaces[i].packages[j].nodes[node_index].run_command <<std::endl;
-//                // command_pulisher(ws.packages[i].nodes[node_index].run_command);
-//                //  更新搜索起始位置
-//                startPos = spacePos + 1;
-//                node_index++;
-//            }
-//            else
-//                break;
-//        }
-//        else
-//            break;
-//    }
+    //                workspaces[i].packages[j].nodes[node_index].name = extractedString;
+    //                std::cout << node_index <<std::endl;
+    //                workspaces[i].packages[j].nodes[node_index].run_command = workspaces[i].command_source_install + ";ros2 run " + workspaces[i].packages[j].name + " " + extractedString + " &";
+    //                std::cout << workspaces[i].packages[j].nodes[node_index].run_command <<std::endl;
+    //                // command_pulisher(ws.packages[i].nodes[node_index].run_command);
+    //                //  更新搜索起始位置
+    //                startPos = spacePos + 1;
+    //                node_index++;
+    //            }
+    //            else
+    //                break;
+    //        }
+    //        else
+    //            break;
+    //    }
     return n;
 }
 
@@ -369,15 +382,12 @@ package ros2manager::loadPackageXML(std::string file_path, package pkg)
     tinyxml2::XMLElement *root = doc.FirstChildElement("package");
     if (root)
     {
-        std::cout << "you" <<std::endl;
         pkg.name = root->FirstChildElement("name")->GetText();
         pkg.version = root->FirstChildElement("version")->GetText();
         pkg.description = root->FirstChildElement("description")->GetText();
         pkg.maintainer = root->FirstChildElement("maintainer")->GetText();
         pkg.maintainer_email = root->FirstChildElement("maintainer")->Attribute("email");
         pkg.license = root->FirstChildElement("license")->GetText();
-        std::cout << "    < " << pkg.name << std::endl;
-        std::cout << removeString("ros2", "ros") << std::endl;
         for (tinyxml2::XMLElement *dep = root->FirstChildElement("exec_depend"); dep != nullptr; dep = dep->NextSiblingElement("exec_depend"))
         {
             pkg.exec_depends.push_back(dep->GetText());
@@ -389,7 +399,7 @@ package ros2manager::loadPackageXML(std::string file_path, package pkg)
     }
     else
     {
-        std::cout << "no" <<std::endl;
+
     }
 
     return pkg;

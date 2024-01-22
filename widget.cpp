@@ -2,27 +2,43 @@
 #include "./ui_widget.h"
 #include "ros2manager.h"
 #include "form.h"
-#include <QDesktopWidget>
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+    #include <QDesktopWidget>
+#else
+    #include <QScreen>
+#endif
 Widget::Widget(QWidget *parent)
     : QWidget(parent)
     , ui(new Ui::Widget)
 {
     ui->setupUi(this);
     // 获取屏幕的大小和分辨率
-    QDesktopWidget* desktop = QApplication::desktop();
-    int screenWidth = desktop->width();
-    int screenHeight = desktop->height();
+    int screenWidth;
+    int screenHeight;
+
     this->setWindowTitle("ROS2 Manager");
     this->resize(QSize(1024,720));
     // 计算窗口的位置
     int windowWidth = this->width();
     int windowHeight = this->height();
+    this->setStyleSheet("background-color:white");
+    this->setStyleSheet("color:black");
+
+
+    #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+        QDesktopWidget* desktop = QApplication::desktop();
+        screenWidth = desktop->width();
+        screenHeight = desktop->height();
+    #else
+        QScreen* screen = QGuiApplication::primaryScreen();
+        // 获取屏幕的几何尺寸
+        QRect screenGeometry = screen->geometry();
+        screenWidth = screenGeometry.width();
+        screenHeight = screenGeometry.height();
+    #endif
+    // 将窗口移动到计算出的位置
     int x = (screenWidth - windowWidth) / 2;
     int y = (screenHeight - windowHeight) / 2;
-
-    // 将窗口移动到计算出的位置
-
-
     this->move(x, y);
     thread = new FindThread(this);
     init();
@@ -48,9 +64,6 @@ void Widget::init()
 {
     ui->tabWidget->setTabText(0,"setting");
     ui->xml_path->setText(QString::fromStdString(Widget::default_xml_path));
-
-    //ros2_manager.init(Widget::default_xml_path.c_str());
-
 }
 void Widget::appendToTextBrowser(const QString &result)
 {
@@ -110,14 +123,14 @@ void Widget::dealDone_auto(){
 void Widget::dealThread_auto()
 {
     thread->addFunc([=](){
-        std::vector <workspace>().swap(workspaces);
+        //std::cout << "进入" << std::endl;
+        workspaces.clear();
         if(ros2_manager.auto_find())
         {
             emit updateOutputText(QString::fromStdString(ros2_manager.get_output()));
             workspaces = ros2_manager.get_workspace();
             for(int i = 0; i < workspaces.size(); i++)
             {
-                std::cout << "进入" << std::endl;
                         emit addTabSignal(workspaces[i]);
             }
         }
@@ -170,7 +183,7 @@ void Widget::addTabSlot(workspace workspace)
         Form *newtab = new Form(workspace);
         ui->tabWidget->addTab(newtab, workspace.name.c_str());
     }
-    std::cout << "处理" << std::endl;
+    //std::cout << "处理" << std::endl;
 }
 void Widget::on_auto_find_clicked()
 {

@@ -1,6 +1,6 @@
 #include "form.h"
 #include "ui_form.h"
-
+#include "terminal_widget.h"
 //#include "widget.h"
 #include <QSplitter>
 Form::Form(workspace ws, QWidget *parent) :
@@ -12,6 +12,10 @@ model = new QStandardItemModel(this);
 //设置表头隐藏
 ui->setupUi(this);
 //connect(ui->Details, &QTextEdit:, this, &Form::wheelEvent);
+terminal_widget *w = new terminal_widget();
+ui->toolBox->removeItem(0);
+ui->toolBox->addItem(w,"1");
+ui->pushButton_run->hide();
 form_ws = ws;
 ui->treeView->setContextMenuPolicy(Qt::CustomContextMenu);
 menu = new QMenu(ui->treeView);
@@ -27,7 +31,7 @@ connect(ui->treeView,&QTreeView::customContextMenuRequested,
 //ui->treeView->setHeaderHidden(true);
 
     //设置表头
-    model->setHorizontalHeaderLabels(QStringList()<<"name"<<"description"<<"未定");
+    model->setHorizontalHeaderLabels(QStringList()<<"name"<<"description");
 
     //设置model
     //ui->treeView->setColumnWidth(0,500);
@@ -120,7 +124,12 @@ void Form::wheelEvent(QWheelEvent* event)
     {
 
         if (QApplication::keyboardModifiers() & Qt::ControlModifier) {
-            const int delta = event->delta();
+            int delta = 0;
+            #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+            delta = event->angleDelta().y();
+            #else
+            delta = event->angleDelta().y();
+            #endif
             if (delta > 0) {
                 ui->Details->zoomIn();
             } else if (delta < 0) {
@@ -139,6 +148,7 @@ Form::~Form()
 void Form::show_Details(workspace ws,std::string choose_type,int pkg,int nl)
 {
     ui->Details->clear();
+    ui->pushButton_run->setHidden(true);
     if(choose_type=="package")
     {
 //        ui->Details->append("Type : Package");
@@ -188,7 +198,8 @@ void Form::show_Details(workspace ws,std::string choose_type,int pkg,int nl)
             ws.packages[pkg].nodes[nl].run_command = "Quick run command : " + ws.packages[pkg].nodes[nl].run_command;
             ui->Details->append(ws.packages[pkg].nodes[nl].name.c_str());
             ui->Details->append(ws.packages[pkg].nodes[nl].run_command.c_str());
-
+            ui->pushButton_run->setText("Run");
+            ui->pushButton_run->setHidden(false);
         }
         else
         ui->Details->append("A node or a launch lile that does not exist, please choose a useful node of a launch file");
@@ -205,6 +216,8 @@ void Form::show_Details(workspace ws,std::string choose_type,int pkg,int nl)
         ui->Details->append(ws.packages[pkg].launches[nl].name.c_str());
         ui->Details->append(ws.packages[pkg].launches[nl].path.c_str());
         ui->Details->append(ws.packages[pkg].launches[nl].launch_command.c_str());
+        ui->pushButton_run->setText("Launch");
+        ui->pushButton_run->setHidden(false);
         }
         else
         ui->Details->append("A node or a launch lile that does not exist, please choose a useful node of a launch file");
@@ -260,7 +273,6 @@ void Form::on_treeView_clicked(const QModelIndex &index)
             //show_Details(form_ws,choose_type,i);
         }
         else{
-
             choose_type = "package";
 
 
@@ -275,9 +287,6 @@ void Form::on_treeView_clicked(const QModelIndex &index)
         else
         {}
     }
-
-    //std::cout << choose_type <<std::endl;
-    //qDebug() <<  "i:" << i << "j:" << j<<"k:"<<k;
 }
 
 

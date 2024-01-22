@@ -71,7 +71,7 @@ public:
 };
 class ros2manager:public QObject
 {
-Q_OBJECT
+    Q_OBJECT
 private:
     // tinyxml2::XMLDocument doc;
     std::string load_command;                 // 加载最初始的命令行命令
