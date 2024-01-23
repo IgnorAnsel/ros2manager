@@ -3,6 +3,7 @@
 
 #include <QWidget>
 #include <QProcess>
+#include "ros2manager.h"
 namespace Ui {
 class terminal_widget;
 }
@@ -12,7 +13,7 @@ class terminal_widget : public QWidget
     Q_OBJECT
 
 public:
-    explicit terminal_widget(QWidget *parent = nullptr);
+    explicit terminal_widget(launch l,node n,std::string choose_type,QWidget *parent = nullptr);
     ~terminal_widget();
 
 private slots:

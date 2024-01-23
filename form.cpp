@@ -11,13 +11,21 @@ model = new QStandardItemModel(this);
 //QSplitter* splitter;
 //设置表头隐藏
 ui->setupUi(this);
+works = ws;
+node nn;
+launch ll;
 //connect(ui->Details, &QTextEdit:, this, &Form::wheelEvent);
-terminal_widget *w = new terminal_widget();
+terminal_widget *w = new terminal_widget(ll,nn,"123");
 ui->toolBox->removeItem(0);
 ui->toolBox->addItem(w,"1");
 ui->pushButton_run->hide();
+ui->toolBox->setItemText(0,"Terminal");
 form_ws = ws;
 ui->treeView->setContextMenuPolicy(Qt::CustomContextMenu);
+tool_menu = new QMenu(ui->toolBox);
+QAction *stop_action = tool_menu->addAction("停止");
+QAction *colse_action = tool_menu->addAction("删除终端");
+ui->toolBox->setContextMenuPolicy(Qt::CustomContextMenu);
 menu = new QMenu(ui->treeView);
 menu->addAction("运行");
 menu->addAction("停止");
@@ -26,6 +34,29 @@ menu->addAction("停止");
 //splitter->addWidget(ui->Details);
 //splitter->setStretchFactor(0,70);
 //splitter->setStretchFactor(1,30);
+connect(ui->toolBox, &QToolBox::customContextMenuRequested, [=](const QPoint &pos) {
+    Q_UNUSED(pos);
+
+    // 获取当前选中的页面索引
+    int currentIndex = ui->toolBox->currentIndex();
+
+    // 显示上下文菜单，并获取用户选择的操作项
+    QAction *selectedAction = tool_menu->exec(QCursor::pos());
+
+    // 根据用户选择的操作项执行相应的操作
+    if (selectedAction == colse_action) {
+        if (currentIndex != -1) {
+            ui->toolBox->removeItem(currentIndex);
+        }
+    }
+    else if(selectedAction == stop_action){
+        if (currentIndex != -1) {
+
+        }
+    }
+});
+
+
 connect(ui->treeView,&QTreeView::customContextMenuRequested,
         this,&Form::slotMenuPopup);
 //ui->treeView->setHeaderHidden(true);
@@ -253,6 +284,7 @@ void Form::on_treeView_clicked(const QModelIndex &index)
                 {
                     perror("Unable to know what you chose");
                 }
+                std::cout<<"k:"<<k<<std::endl;
             }
             else
             {
@@ -269,19 +301,24 @@ void Form::on_treeView_clicked(const QModelIndex &index)
                 {
                     perror("ERROR");
                 }
+                j = parent_item->row();
+                std::cout<<"j:"<<j<<std::endl;
             }
-            //show_Details(form_ws,choose_type,i);
+
         }
         else{
             choose_type = "package";
-
-
         }
         i = item->row();
+        std::cout<<"i:"<<i<<std::endl;
         if(choose_type == "package")
         show_Details(form_ws,choose_type,i);
         else if(choose_type== "launch_child" || choose_type=="node_child")
+        {
+        this->index_nl = i;
+        this->index_pkg = k;
         show_Details(form_ws,choose_type,k,i);
+        }
         else if(choose_type=="launch"||"node")
         show_Details(form_ws,choose_type,0);
         else
@@ -290,4 +327,31 @@ void Form::on_treeView_clicked(const QModelIndex &index)
 }
 
 
+void Form::run_clocked(workspace ws,std::string choose_type)
+{
+
+}
+
+void Form::on_pushButton_run_clicked()
+{
+    std::string pagename;
+    node n;
+    launch l;
+    terminal_widget *terminal;
+    if(choose_type=="launch_child")
+    {
+        l = works.packages[index_pkg].launches[index_nl];
+        pagename=l.name;
+        terminal = new terminal_widget(l,n,choose_type);
+    }
+    else if(choose_type=="node_child")
+    {
+        n = works.packages[index_pkg].nodes[index_nl];
+        pagename=n.name;
+        terminal = new terminal_widget(l,n,choose_type);
+    }
+    ui->toolBox->addItem(terminal,QString::fromStdString(pagename));
+    ui->toolBox->setCurrentIndex(ui->toolBox->count() - 1);
+
+}
 
