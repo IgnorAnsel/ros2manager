@@ -1,0 +1,6 @@
+#include "terminal_thread"
+
+terminal_thread::terminal_thread()
+{
+
+}

@@ -46,7 +46,9 @@ connect(ui->toolBox, &QToolBox::customContextMenuRequested, [=](const QPoint &po
     // 根据用户选择的操作项执行相应的操作
     if (selectedAction == colse_action) {
         if (currentIndex != -1) {
+            QWidget* widgetToRemove = ui->toolBox->widget(currentIndex);
             ui->toolBox->removeItem(currentIndex);
+            delete widgetToRemove;
         }
     }
     else if(selectedAction == stop_action){

@@ -75,32 +75,32 @@ void Widget::on_refresh_clicked()
     //std::vector <workspace>().swap(workspaces);
     ui->refresh->setText("Loading");
     QApplication::processEvents(); // 处理所有挂起的事件，包括界面更新
-//    if(ros2_manager.init(Widget::default_xml_path.c_str()))
-//    {
-//        ui->output->append(ros2_manager.get_output().c_str());
-//        //ui->refresh->setText("refresh");
-//        workspaces = ros2_manager.get_workspace();
-//        for(int i = 0;i<workspaces.size();i++)
-//        {
-//            int tabCount = ui->tabWidget->count();
-//            bool hasSameName = false;
-//            for (int j = 0; j < tabCount; ++j) {
-//                QString tabName = ui->tabWidget->tabText(j);
-//                if (tabName == (workspaces[i].name).c_str()) {
-//                    hasSameName = true;
-//                    break;
-//                }
-//            }
-//            if (!hasSameName) {
-//                Form *newtab = new Form(workspaces[i]);
-//                ui->tabWidget->addTab(newtab, (workspaces[i].name).c_str());
-//            }
-//        }
-//    }
-//    else
-//    {
-//        ui->refresh->setText("ERROR");
-//    }
+    //    if(ros2_manager.init(Widget::default_xml_path.c_str()))
+    //    {
+    //        ui->output->append(ros2_manager.get_output().c_str());
+    //        //ui->refresh->setText("refresh");
+    //        workspaces = ros2_manager.get_workspace();
+    //        for(int i = 0;i<workspaces.size();i++)
+    //        {
+    //            int tabCount = ui->tabWidget->count();
+    //            bool hasSameName = false;
+    //            for (int j = 0; j < tabCount; ++j) {
+    //                QString tabName = ui->tabWidget->tabText(j);
+    //                if (tabName == (workspaces[i].name).c_str()) {
+    //                    hasSameName = true;
+    //                    break;
+    //                }
+    //            }
+    //            if (!hasSameName) {
+    //                Form *newtab = new Form(workspaces[i]);
+    //                ui->tabWidget->addTab(newtab, (workspaces[i].name).c_str());
+    //            }
+    //        }
+    //    }
+    //    else
+    //    {
+    //        ui->refresh->setText("ERROR");
+    //    }
 }
 void Widget::stopThread()
 {

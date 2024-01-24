@@ -24,6 +24,7 @@ set(PROJECT_SOURCES
         form.ui
         findthread.h findthread.cpp
         terminal_widget.h terminal_widget.cpp terminal_widget.ui
+        terminal_thread.h terminal_thread.cpp
 )
 
 if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)

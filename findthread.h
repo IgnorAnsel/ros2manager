@@ -9,7 +9,6 @@ class FindThread : public QThread
     Q_OBJECT
 public:
     explicit FindThread(QObject *parent = nullptr) : QThread(parent) {}
-
     void addFunc(std::function<void()> func);
 protected:
     //run() 是继承下来的虚函数
